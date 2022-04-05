@@ -1,0 +1,71 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+codedSource
+{
+  type            vectorCodedSource;
+  active          true;
+  selectionMode   all;
+  fields (U);
+  name maragoniNormal;
+
+codeLibs
+#{
+
+#};
+
+  codeInclude
+  #{
+    #include "fvcDiv.H"
+    #include "fvcGrad.H"
+    #include "fvcSnGrad.H"
+    #include "fvcFlux.H"
+    #include "fvcMeshPhi.H"
+    #include "surfaceInterpolate.H"
+  #};
+
+codeAddSup
+#{
+    vectorField& mN = eqn.source(); //source will be a vector field called mN
+    const volScalarField& T = mesh_.lookupObject<volScalarField>("T"); //temperature
+    // const volScalarField& alpha1 = mesh_.lookupObject<volScalarField>("alpha.vapor");
+    // const volScalarField& alpha2 = mesh_.lookupObject<volScalarField>("alpha.pentane");
+
+    // tmp<volVectorField> n      ( alpha2*fvc::grad(alpha1) - alpha1*fvc::grad(alpha2)  ); //normal vector n, not nhat
+    // tmp<volVectorField> nhat   ( fvc::grad(alpha1) - fvc::grad(alpha2)  ); //unit normal
+
+    // // const volScalarField& K     = fvc::div(nhat); //curvature, div of nhat
+    // tmp<volVectorField> nK     (n()*fvc::div(nhat())); //curvature times n
+    // create sigma(T) in createFields read in here.
+
+      forAll(mN, i) //for all cells, at the ith cell, do below.
+      {
+        mN[i][0] += 0.0145; //pull contents of nK at ith cell, 0th dir
+        mN[i][1] += 0.0145; //y
+        mN[i][2] += 0.0145; //z
+              //stf = sigma*K*nhat*abs(grad(alpha)) = sigma*K*n
+      } //end of cell loop
+
+    Pout << "***adding the sourceterm with addSup***" << endl;
+#}; //end of addsup
+
+codeCorrect
+#{
+
+#};
+
+codeConstrain
+#{
+
+#};
+
+}//end of source
+
+// ************************************************************************* //
