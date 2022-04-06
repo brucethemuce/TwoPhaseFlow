@@ -1,0 +1,71 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+codedSource
+{
+  type            scalarCodedSource;
+  active          true;
+  selectionMode   all;
+  fields (U);
+  name MarangoniSource;
+
+codeLibs
+#{
+
+#};
+
+  codeInclude
+  #{
+    #include "fvcDiv.H"
+    #include "fvcGrad.H"
+    #include "fvcSnGrad.H"
+    #include "fvcFlux.H"
+    #include "fvcMeshPhi.H"
+    #include "surfaceInterpolate.H"
+  #};
+
+codeAddSup
+#{
+    scalarField& mN = eqn.source(); //source will be a vector field called mN
+    const volScalarField& T = mesh_.lookupObject<volScalarField>("T"); 
+    const volScalarField& alpha1 = mesh_.lookupObject<volScalarField>("alpha.vapor");
+    const volScalarField& alpha2 = mesh_.lookupObject<volScalarField>("alpha.pentane");
+
+    tmp<volVectorField> n      ( alpha2*fvc::grad(alpha1) - alpha1*fvc::grad(alpha2)  ); //normal vector n, not nhat
+    tmp<volVectorField> nhat   n12 / (mag(n12) +
+              dimensionedScalar("tinyNumber", dimensionSet(0, -1, 0, 0, 0, 0, 0), 0.000000001)); //ROBUSTIFY
+    
+    tmp<surfaceScalarField> Tangent 
+    dimensionedScalar("dsigmaT_", dimensionSet(1,0,-2,-1,0,0,0), *dsigmaT)*
+                    (
+                        fvc::interpolate(fvc::grad(T)) - fvc::interpolate((nHatVector & fvc::grad(T)) * (nHatVector))
+                    )// surfaceVectorField
+                  & mesh_.Sf()/mesh_.magSf() //surfaceScalar
+
+    forAll(mN, i) //for all cells, at the ith cell, do below.
+    {
+      mN[i][0] += 
+    } //end of cell loop
+    Pout << "*adding the tangent surface tension force*" << endl;
+#}; //end of addsup
+
+codeCorrect
+#{
+
+#};
+
+codeConstrain
+#{
+
+#};
+
+}//end of source
+
+// ************************************************************************* //
