@@ -19,19 +19,19 @@ FoamFile
 isoAdvection 1;
 application     multiRegionPhaseChangeFlow;
 
-startFrom       latestTime;
+startFrom       startTime;
 
 startTime       0;
 
 stopAt          endTime;
 
-endTime         0.5;
+endTime         2e-7;
 
 deltaT          1e-7;
 
 writeControl    adjustableRunTime;
 
-writeInterval   0.1;
+writeInterval   1e-7;
 
 purgeWrite      0;
 
@@ -76,7 +76,7 @@ functions
 
         fields
         (
-            psi0_
+            sigma
         );
 
     }
@@ -88,8 +88,28 @@ functions
 
         // Write at same frequency as fields
         writeControl    timeStep;
-        writeInterval   10;
+        writeInterval   1;
         region fluid;
+    }
+
+    writeSigma
+    {
+        type            volFieldValue;
+        libs            ("libpostProcess.so");
+
+        // Write at same frequency as fields
+        writeControl    timeStep;
+        writeInterval   1;
+        writeFields     true;
+        log             true;
+        region          fluid;
+
+        operation       none;
+
+        fields
+        (
+            sigma
+        );
     }
 
 
