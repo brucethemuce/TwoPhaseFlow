@@ -25,7 +25,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         2e-7;
+endTime         5e-7;
 
 deltaT          1e-7;
 
@@ -33,7 +33,7 @@ writeControl    adjustableRunTime;
 
 writeInterval   1e-7;
 
-purgeWrite      0;
+purgeWrite      1;
 
 writeFormat     ascii;
 
@@ -76,7 +76,7 @@ functions
 
         fields
         (
-            sigma
+            psi0_
         );
 
     }
@@ -92,25 +92,25 @@ functions
         region fluid;
     }
 
-    writeSigma
-    {
-        type            volFieldValue;
-        libs            ("libpostProcess.so");
+    // writeSigma
+    // {
+    //     type            volFieldValue;
+    //     libs            ("libpostProcess.so");
 
-        // Write at same frequency as fields
-        writeControl    timeStep;
-        writeInterval   1;
-        writeFields     true;
-        log             true;
-        region          fluid;
+    //     // Write at same frequency as fields
+    //     writeControl    timeStep;
+    //     writeInterval   1;
+    //     writeFields     false;
+    //     log             true;
+    //     region          fluid;
 
-        operation       none;
+    //     operation       none;
 
-        fields
-        (
-            sigma
-        );
-    }
+    //     fields
+    //     (
+    //         sigma
+    //     );
+    // }
 
 
 }

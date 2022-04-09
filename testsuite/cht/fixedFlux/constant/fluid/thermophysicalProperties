@@ -19,15 +19,7 @@ phases (water air);
 
 pMin            pMin [ 1 -1 -2 0 0 0 0 ] 10000;
 
-// sigma           sigma [ 1 0 -2 0 0 0 0 ] 0.0089004;
-sigma{ 
-    type temperatureDependent;
-        sigma polynomial
-        (
-            (0.001 1)
-            (-4e-4 2)
-        );
-    };
+sigma           sigma [ 1 0 -2 0 0 0 0 ] 0;
 
 TMin           TMin [ 0 0 0 1 0 0 0 ] 50;
 TMax           TMax [ 0 0 0 1 0 0 0 ] 500;
@@ -44,10 +36,18 @@ air
 
 surfaceForces
 {
-    sigma 0.01;
-    surfaceTensionForceModel gradAlpha;
-    accelerationModel gravity;
-    deltaFunctionModel alphaCSF;
+sigma
+{
+    type        temperatureDependent;
+    sigma polynomial
+    (
+        (0.25 0)
+        (-4e-4 1)
+    );
+}
+  surfaceTensionForceModel gradAlpha;
+  accelerationModel gravity;
+  deltaFunctionModel alphaCSF;
 }
 
 // ************************************************************************* //
