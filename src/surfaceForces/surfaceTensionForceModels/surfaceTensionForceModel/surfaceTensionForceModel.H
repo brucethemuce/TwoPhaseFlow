@@ -165,7 +165,9 @@ public:
         virtual tmp<surfaceScalarField> surfaceTensionForce()
         {
             return fvc::interpolate(sigma())*Kf()
-                   * deltaFunctionModel_->deltaFunction();
+                   * deltaFunctionModel_->deltaFunction()
+                //    + gamma*grad_s(T)
+                   ;
         }
 };
 

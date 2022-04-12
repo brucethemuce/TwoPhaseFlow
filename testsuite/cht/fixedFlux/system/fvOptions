@@ -1,0 +1,82 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+MarangoniSource
+  {
+    type            vectorCodedSource;
+    active          true;
+    selectionMode   all;
+    fields (rho, U);
+    name MarangoniSource;
+
+  codeLibs
+  #{
+
+  #};
+
+    codeInclude
+    #{
+      #include "fvcDiv.H"
+      #include "fvcGrad.H"
+      #include "fvcSnGrad.H"
+      #include "fvcFlux.H"
+      #include "fvcMeshPhi.H"
+      #include "surfaceInterpolate.H"
+      #include "fvCFD.H"
+      #include "fvc.H"
+    #};
+
+codeAddSup
+#{
+    vectorField& tangent_source = eqn.source(); //source will be a vector field
+    const volScalarField& T = mesh_.lookupObject<volScalarField>("T");  
+    const volScalarField& alpha1 = mesh_.lookupObject<volScalarField>("alpha.vapor");
+    const volScalarField& alpha2 = mesh_.lookupObject<volScalarField>("alpha.pentane");
+    // const volScalarField& rho_temp = mesh().lookupObject<volScalarField>("rho");
+    const volVectorField& n      =( alpha2*fvc::grad(alpha1) - alpha1*fvc::grad(alpha2)  ); //normal vector to interface
+    const volVectorField& nHat   = 
+    (n /(( mag(n) ) 
+    + dimensionedScalar("tinyNumber", dimensionSet(0, -1, 0, 0, 0, 0, 0), 1e-8))); //unit normal
+
+
+    const volVectorField& Tangent=
+      (
+        mag(n)*
+        dimensionedScalar("dSigma_dT", dimensionSet(1, 0, -2, -1, 0, 0, 0),-1e-4) *
+        (
+            (
+                fvc::grad(T) 
+                - (nHat & fvc::grad(T)) * (nHat)
+            )
+        )
+      ); //end field
+
+    forAll(tangent_source, i){
+      tangent_source[i][0] += Tangent[i][0];
+      tangent_source[i][1] += Tangent[i][1];
+      tangent_source[i][2] += Tangent[i][2];
+    }
+
+Pout << "*adding the tangent surface tension force*" << endl;
+#}; //end of addsup
+
+  codeCorrect
+  #{
+
+  #};
+
+  codeConstrain
+  #{
+
+  #};
+
+}//end of source
+
+// ************************************************************************* //
